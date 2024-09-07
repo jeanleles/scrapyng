@@ -76,21 +76,3 @@ pm2 startup
 #### 2. Insira a URL da página que deseja fazer o scraping no campo de entrada.
 #### 3. Clique no botão para obter os resultados.
 #### 4. O conteúdo da página (tags h1, h2 e p) será exibido logo abaixo.
-
-### Estrutura do Projeto
-
-SCRAPYNG/
-│
-├── backend/                  
-│   ├── __pycache__/          
-│   ├── app.py                # Arquivo principal do Flask
-│   ├── scrapying.py          # Arquivo com as funções de scraping
-│   └── start-backend.sh      # Script para iniciar o backend
-│
-├── frontend/                 
-│   ├── index.html            # Página principal do frontend
-│   ├── script.js             # Script JavaScript para a interação
-│   ├── styles.css            # Estilos CSS para o frontend
-│   └── start-frontend.sh     # Script para iniciar o frontend
-│
-└── README.md                 # Documentação do projeto
