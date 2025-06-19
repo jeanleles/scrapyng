@@ -217,6 +217,7 @@ section#scrapeSection {
   box-shadow: none;
   width: 100%;
   line-height: 1.5;
+  margin-left: 10px;
 }
 
 .clear-btn {
@@ -245,4 +246,13 @@ section#scrapeSection {
 
 .clear-btn:hover {
   color: #ff4d4d;
+}
+
+.py-highlight {
+  background: linear-gradient(90deg, #00DF89 0%, #8e44ad 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  font-weight: bold;
 }

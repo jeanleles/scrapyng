@@ -5,9 +5,18 @@ async function fetchScrapingResults() {
   const scrapeSection = document.getElementById('scrapeSection');
   const spinner = document.getElementById('loadingSpinner');
 
-  resultContainer.innerHTML = '<p>Carregando...</p>';
+  // Limpa mensagens anteriores
+  resultContainer.innerHTML = '';
   summaryContainer.innerHTML = '';
   scrapeSection.style.display = 'none';
+
+  // Validação: se não houver URL, exibe erro unificado e retorna
+  if (!url || url.trim() === '') {
+    summaryContainer.innerHTML = '<div><strong>Erro:</strong> Informe uma URL válida para realizar o scraping.</div>';
+    scrapeSection.style.display = 'block';
+    return;
+  }
+
   spinner.style.display = 'flex';
 
   try {
@@ -75,8 +84,8 @@ async function fetchScrapingResults() {
     scrapeSection.style.display = 'block';
 
   } catch (error) {
-    summaryContainer.innerHTML = '';
-    resultContainer.textContent = `Erro: ${error.message}`;
+    summaryContainer.innerHTML = `<div><strong>Erro:</strong> ${error.message}</div>`;
+    resultContainer.innerHTML = '';
     spinner.style.display = 'none';
     scrapeSection.style.display = 'block';
   }
@@ -89,9 +98,17 @@ async function fetchOnlySummary() {
   const scrapeSection = document.getElementById('scrapeSection');
   const spinner = document.getElementById('loadingSpinner');
 
-  summaryContainer.innerHTML = '<p>Gerando resumo...</p>';
+  summaryContainer.innerHTML = '';
   resultContainer.innerHTML = '';
   scrapeSection.style.display = 'none';
+
+  // Validação: se não houver URL, exibe erro unificado e retorna
+  if (!url || url.trim() === '') {
+    summaryContainer.innerHTML = '<div><strong>Erro:</strong> Informe uma URL válida para gerar o resumo.</div>';
+    scrapeSection.style.display = 'block';
+    return;
+  }
+
   spinner.style.display = 'flex';
 
   try {
@@ -115,8 +132,8 @@ async function fetchOnlySummary() {
     spinner.style.display = 'none';
     scrapeSection.style.display = 'block';
   } catch (error) {
-    summaryContainer.innerHTML = '';
-    resultContainer.textContent = `Erro: ${error.message}`;
+    summaryContainer.innerHTML = `<div><strong>Erro:</strong> ${error.message}</div>`;
+    resultContainer.innerHTML = '';
     spinner.style.display = 'none';
     scrapeSection.style.display = 'block';
   }
