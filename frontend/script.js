@@ -1,10 +1,37 @@
 async function fetchScrapingResults() {
   const url = document.getElementById('urlInput').value;
   const resultContainer = document.getElementById('resultContent');
+  const summaryContainer = document.getElementById('summaryContainer');
+  const scrapeSection = document.getElementById('scrapeSection');
+  const spinner = document.getElementById('loadingSpinner');
+
   resultContainer.innerHTML = '<p>Carregando...</p>';
+  summaryContainer.innerHTML = '';
+  scrapeSection.style.display = 'none';
+  spinner.style.display = 'flex';
 
   try {
-    const response = await fetch('http://172.20.70.254:5555/scrape', { // 172.20.70.254 - IP da minha VM Ubuntu no WSL, pode ser localhost ou 172.0.0.1
+    // Chama o backend para obter o resumo
+    const summaryResponse = await fetch('http://172.21.2.152:5555/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url })
+    });
+    if (summaryResponse.ok) {
+      const summaryData = await summaryResponse.json();
+      if (summaryData.summary) {
+        summaryContainer.innerHTML = `<div><strong>Resumo:</strong> ${summaryData.summary}</div>`;
+      } else {
+        summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Não foi possível gerar um resumo.</div>';
+      }
+    } else {
+      summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Erro ao gerar resumo.</div>';
+    }
+
+    // Chama o backend para obter o scraping detalhado
+    const response = await fetch('http://172.21.2.152:5555/scrape', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -15,6 +42,8 @@ async function fetchScrapingResults() {
     if (!response.ok) {
       const errorData = await response.json();
       resultContainer.textContent = `Erro: ${errorData.error}`;
+      spinner.style.display = 'none';
+      scrapeSection.style.display = 'block';
       return;
     }
 
@@ -42,7 +71,80 @@ async function fetchScrapingResults() {
       resultContainer.appendChild(pElement);
     });
 
+    spinner.style.display = 'none';
+    scrapeSection.style.display = 'block';
+
   } catch (error) {
+    summaryContainer.innerHTML = '';
     resultContainer.textContent = `Erro: ${error.message}`;
+    spinner.style.display = 'none';
+    scrapeSection.style.display = 'block';
   }
 }
+
+async function fetchOnlySummary() {
+  const url = document.getElementById('urlInput').value;
+  const summaryContainer = document.getElementById('summaryContainer');
+  const resultContainer = document.getElementById('resultContent');
+  const scrapeSection = document.getElementById('scrapeSection');
+  const spinner = document.getElementById('loadingSpinner');
+
+  summaryContainer.innerHTML = '<p>Gerando resumo...</p>';
+  resultContainer.innerHTML = '';
+  scrapeSection.style.display = 'none';
+  spinner.style.display = 'flex';
+
+  try {
+    const summaryResponse = await fetch('http://172.21.2.152:5555/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url })
+    });
+    if (summaryResponse.ok) {
+      const summaryData = await summaryResponse.json();
+      if (summaryData.summary) {
+        summaryContainer.innerHTML = `<div><strong>Resumo:</strong> ${summaryData.summary}</div>`;
+      } else {
+        summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Não foi possível gerar um resumo.</div>';
+      }
+    } else {
+      summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Erro ao gerar resumo.</div>';
+    }
+    spinner.style.display = 'none';
+    scrapeSection.style.display = 'block';
+  } catch (error) {
+    summaryContainer.innerHTML = '';
+    resultContainer.textContent = `Erro: ${error.message}`;
+    spinner.style.display = 'none';
+    scrapeSection.style.display = 'block';
+  }
+}
+
+// Atualiza a visibilidade do botão X conforme o texto do input
+const urlInput = document.getElementById('urlInput');
+const urlBox = document.querySelector('.url-box');
+if (urlInput && urlBox) {
+  urlInput.addEventListener('input', function() {
+    if (urlInput.value.trim() !== '') {
+      urlBox.classList.add('has-text');
+    } else {
+      urlBox.classList.remove('has-text');
+    }
+  });
+}
+
+function clearUrlInput() {
+  const input = document.getElementById('urlInput');
+  input.value = '';
+  const urlBox = document.querySelector('.url-box');
+  if (urlBox) urlBox.classList.remove('has-text');
+  input.focus();
+}
+
+// Foco automático no input ao carregar a página
+window.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('urlInput');
+  if (input) input.focus();
+});

@@ -1,7 +1,7 @@
 # Scrapyng
 #### by @jeanleles
 
-#### Uma aplicação para fazer o scrap de páginas web, pegando os seus títulos (h1 e h2) e parágrafos (p). Caso você deseje ler os textos de uma página, mas não está sendo possível devido a algum modal, popup ou tarja que esteja na frente do conteúdo da página, tipo exigência de login, aceite de termos e cookies ou assinatura, você pode utilizar esta aplicação para obter o conteúdo da página apenas colocando a sua URL.
+#### Uma aplicação para fazer o scrap de páginas web, pegando os seus títulos (h1 e h2) e parágrafos (p). Caso você deseje ler os textos de uma página, mas não está sendo possível devido a algum modal, popup ou tarja que esteja na frente do conteúdo da página, tipo exigência de login, aceite de termos e cookies ou assinatura, você pode utilizar esta aplicação para obter o conteúdo da página apenas colocando a sua URL. Também é possível gerar um resumo do texto que foi extraído da página usaundo a ApyHub.
 
 ## 1. Tecnologias Utilizadas
 
@@ -18,7 +18,7 @@
 ### 1. Clonar o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/scrapyng.git
+git clone https://github.com/jeanleles/scrapyng.git
 cd scrapyng 
 ```
 
@@ -49,7 +49,7 @@ npm install -g pm2
 #### Iniciar o Backend com PM2
 ##### Navegue até o diretório do backend e inicie o backend usando PM2:
 ```bash
-pm2 start start-backend.sh --name backendScraping
+pm2 start start-backend.sh --name backendScrapyng
 ```
 
 #### Iniciar o Frontend com PM2
@@ -75,4 +75,4 @@ pm2 startup
 #### 1. Acesse o frontend através do navegador usando o endereço fornecido pelo http-server, por exemplo, http://localhost:8080.
 #### 2. Insira a URL da página que deseja fazer o scraping no campo de entrada.
 #### 3. Clique no botão para obter os resultados.
-#### 4. O conteúdo da página (tags h1, h2 e p) será exibido logo abaixo.
+#### 4. O conteúdo da página (tags h1, h2, p, etc.) será exibido logo abaixo.

@@ -1,5 +1,5 @@
 html {
- /*  font-size: 62.5%; */
+  /*  font-size: 62.5%; */
   --menta: hsl(176 73% 7.3%);
   --indigo: hsl(230 36.4% 12.9%);
   --cyano: hsl(192 60% 7.2%);
@@ -7,20 +7,27 @@ html {
   --menta2: hsl(175 79.3% 8.9%);
 }
 
+html,
 body {
-  max-width: 700px;
+  height: 100%;
+}
+
+body {
+  max-width: 768px;
   margin: 0 auto;
-  padding: 20px;
   font-family: Arial, Helvetica, sans-serif;
   background: radial-gradient(ellipse at 100% 100%, hsl(254 100% 6% / 0.07), var(--violeta), transparent), linear-gradient(to bottom right, var(--menta), var(--indigo), var(--menta2), var(--cyano));
   background-repeat: no-repeat;
   background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 h1 {
-  font-size: 32px;
+  font-size: 48px;
   color: #fff;
-  margin-top: 0;
+  margin: 20px 0;
 }
 
 h2 {
@@ -31,7 +38,7 @@ input {
   width: 97%;
   padding: 8px;
   outline: none;
-  border: 2px solid #00DF89; 
+  border: 2px solid #00DF89;
   font-size: 16px;
   border-radius: 8px;
 }
@@ -59,23 +66,183 @@ button:hover {
 
 .result {
   margin: 20px 0;
-  padding: 0 20px;
-  border: 1px solid #494949;
+  padding: 20px;
   background-color: #161B22;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   border-radius: 8px;
   color: #fff;
 }
 
-.result p {
-  font-size: 18px;
+footer {
+  margin-top: auto;
+  width: 100%;
+  padding: 16px 0 8px 0;
+  background: transparent;
+}
+
+footer p {
+  text-align: center;
+  color: aliceblue;
+}
+
+.summary {
+  color: #fff;
+  background-color: #161B22;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  line-height: 28px;
+}
+
+p {
+  font-size: 16px;
   font-style: normal;
   font-weight: 400;
   color: #fff;
   line-height: 28px;
 }
 
-footer p {
-  text-align: center; 
-  color: aliceblue;
+section#scrapeSection {
+  border: 1.5px solid #494949;
+  background-color: #161B22;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.section-separator {
+  border: none;
+  border-bottom: 1.5px solid #494949;
+  margin: 0 0 0 0;
+}
+
+.center-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 32px;
+}
+
+.center-box input[type="url"] {
+  width: 100%;
+  max-width: 90vw;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 2px solid #00DF89;
+  background: #23272f;
+  color: #fff;
+}
+
+.button-group {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.button-group button {
+  width: 180px;
+  max-width: 45vw;
+  border: none;
+  background: #00DF89;
+  padding: 12px 0;
+  font-size: 18px;
+  color: #161B22;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: all ease .2s;
+  margin: 0;
+}
+
+.button-group button:hover {
+  background: #04794c;
+}
+
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(22, 27, 34, 0.85);
+  z-index: 1000;
+}
+
+.spinner::after {
+  content: '';
+  width: 64px;
+  height: 64px;
+  border: 8px solid #00DF89;
+  border-top: 8px solid #23272f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.url-box {
+  display: flex;
+  align-items: center;
+  border: 2px solid #00DF89;
+  border-radius: 8px;
+  background: #23272f;
+  padding: 0 8px;
+  width: 100%;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.url-box input[type="url"] {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 18px;
+  padding: 12px 32px 12px 0;
+  box-shadow: none;
+  width: 100%;
+  line-height: 1.5;
+}
+
+.clear-btn {
+  display: none;
+  position: absolute;
+  right: 16px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  background: none;
+  border: none;
+  color: #00DF89;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+  line-height: 1;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+}
+
+.url-box.has-text .clear-btn {
+  display: block;
+}
+
+.clear-btn:hover {
+  color: #ff4d4d;
 }
