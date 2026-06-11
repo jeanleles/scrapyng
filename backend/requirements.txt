@@ -1,4 +1,6 @@
 flask
 flask-cors
 beautifulsoup4
-requests 
+requests
+google-generativeai
+python-dotenv

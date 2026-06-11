@@ -3,11 +3,24 @@ import requests
 from bs4 import BeautifulSoup
 from flask_cors import CORS
 import os
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+# Carrega as variáveis de ambiente do arquivo .env
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas as rotas
 
-APYHUB_API_KEY = os.getenv('APYHUB_API_KEY', 'APY07HZwoVvly2KjXmxgQw65H2FUEgCGTGN8paxZXbYtVXkoYqWR45QnbKuYxMv0mkyD9vy')
+# Configura a API do Gemini
+try:
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_api_key:
+        raise ValueError("API Key do Gemini não encontrada. Verifique o arquivo .env")
+    genai.configure(api_key=gemini_api_key)
+except Exception as e:
+    print(f"Erro ao configurar a API do Gemini: {e}")
+
 
 @app.route('/scrape', methods=['POST'])
 def scrape_content():
@@ -26,24 +39,24 @@ def scrape_content():
         if not body_content:
             return jsonify({'error': 'Elemento <body> não encontrado na página.'}), 404
 
-        for tag in body_content.find_all(['header', 'aside', 'footer']):
+        for tag in body_content.find_all(['header', 'aside', 'footer', 'nav', 'script', 'style']):
             tag.decompose()
 
-        headers_h1 = [h1.get_text() for h1 in body_content.find_all('h1')]
-        headers_h2 = [h2.get_text() for h2 in body_content.find_all('h2')]
-        headers_h3 = [h3.get_text() for h3 in body_content.find_all('h3')]
-        headers_h4 = [h4.get_text() for h4 in body_content.find_all('h4')]
-        headers_h5 = [h5.get_text() for h5 in body_content.find_all('h5')]
-        headers_h6 = [h6.get_text() for h6 in body_content.find_all('h6')]
-        spans = [span.get_text() for span in body_content.find_all('span')]
-        blockquotes = [bq.get_text() for bq in body_content.find_all('blockquote')]
-        # Divs apenas com texto puro (sem tags filhas)
-        divs = [div.get_text() for div in body_content.find_all('div') if div.string and div.string.strip()]
-        # ul > li
+        # Filtra a palavra 'publicidade' de todas as tags extraídas
+        headers_h1 = [text for h1 in body_content.find_all('h1') if (text := h1.get_text(strip=True)) and text.lower() != 'publicidade']
+        headers_h2 = [text for h2 in body_content.find_all('h2') if (text := h2.get_text(strip=True)) and text.lower() != 'publicidade']
+        headers_h3 = [text for h3 in body_content.find_all('h3') if (text := h3.get_text(strip=True)) and text.lower() != 'publicidade']
+        headers_h4 = [text for h4 in body_content.find_all('h4') if (text := h4.get_text(strip=True)) and text.lower() != 'publicidade']
+        headers_h5 = [text for h5 in body_content.find_all('h5') if (text := h5.get_text(strip=True)) and text.lower() != 'publicidade']
+        headers_h6 = [text for h6 in body_content.find_all('h6') if (text := h6.get_text(strip=True)) and text.lower() != 'publicidade']
+        spans = [text for span in body_content.find_all('span') if (text := span.get_text(strip=True)) and text.lower() != 'publicidade']
+        blockquotes = [text for bq in body_content.find_all('blockquote') if (text := bq.get_text(strip=True)) and text.lower() != 'publicidade']
+        divs = [text for div in body_content.find_all('div') if div.string and (text := div.get_text(strip=True)) and text.lower() != 'publicidade']
+        paragraphs = [text for p in body_content.find_all('p') if (text := p.get_text(strip=True)) and text.lower() != 'publicidade']
+        
         ul_lis = []
         for ul in body_content.find_all('ul'):
-            ul_lis.extend([li.get_text() for li in ul.find_all('li', recursive=False)])
-        paragraphs = [p.get_text() for p in body_content.find_all('p')]
+            ul_lis.extend([text for li in ul.find_all('li', recursive=False) if (text := li.get_text(strip=True)) and text.lower() != 'publicidade'])
 
         result = {
             'h1': headers_h1,
@@ -70,47 +83,55 @@ def summarize_content():
     url = data.get('url')
     if not url:
         return jsonify({'error': 'URL é obrigatória'}), 400
+    
     try:
-        # Reutiliza a lógica de scraping
+        # 1. Scraping do conteúdo da página
         response = requests.get(url)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         body_content = soup.find('body')
+
         if not body_content:
             return jsonify({'error': 'Elemento <body> não encontrado na página.'}), 404
-        for tag in body_content.find_all(['header', 'aside', 'footer']):
+        
+        for tag in body_content.find_all(['header', 'aside', 'footer', 'nav', 'script', 'style']):
             tag.decompose()
-        # Coleta textos das principais tags
+
         texts = []
-        for tag in ['h1','h2','h3','h4','h5','h6','p','span','blockquote','div']:
-            if tag == 'div':
-                texts.extend([div.get_text() for div in body_content.find_all('div') if div.string and div.string.strip()])
-            else:
-                texts.extend([el.get_text() for el in body_content.find_all(tag)])
-        # ul > li
-        for ul in body_content.find_all('ul'):
-            texts.extend([li.get_text() for li in ul.find_all('li', recursive=False)])
-        # Junta tudo em um texto só
-        full_text = '\n'.join([t.strip() for t in texts if t.strip()])
-        # Chama a API da ApyHub
-        apyhub_url = 'https://api.apyhub.com/ai/summarize-text'
-        payload = {
-            'text': full_text,
-            'summary_length': 'medium',
-            'output_language': 'pt_BR'
-        }
-        headers = {
-            'Content-Type': 'application/json',
-            'apy-token': APYHUB_API_KEY
-        }
-        api_response = requests.post(apyhub_url, json=payload, headers=headers)
-        if api_response.status_code != 200:
-            msg = 'Resumo não pôde ser gerado devido ao limite de chamadas da API gratuita ou instabilidade do serviço. Tente novamente mais tarde.'
-            return jsonify({'summary': msg, 'fallback': True}), 200
-        summary = api_response.json().get('data', {}).get('summary', '')
+        for tag_name in ['h1','h2','h3','h4','h5','h6','p','span','blockquote','div', 'li']:
+            elements = body_content.find_all(tag_name)
+            for el in elements:
+                text = el.get_text(strip=True)
+                # Adiciona apenas texto que não seja vazio e não seja 'publicidade'
+                if text and text.lower() != 'publicidade':
+                    texts.append(text)
+        
+        full_text = '\n'.join(texts)
+
+        if not full_text:
+            return jsonify({'summary': 'Não foi possível extrair conteúdo textual da página para resumir.'})
+
+        # 2. Geração do resumo com Gemini
+        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        prompt = f"Por favor, resuma o seguinte texto extraído de uma página da web em um ou dois parágrafos, em português do Brasil. Foque nos pontos mais importantes e ignore informações irrelevantes como menus ou textos de rodapé. O texto é:\n\n{full_text}"
+        
+        generation_config = genai.types.GenerationConfig(
+            candidate_count=1,
+            temperature=0.7,
+        )
+
+        gemini_response = model.generate_content(prompt, generation_config=generation_config)
+        
+        summary = gemini_response.text
+        
         return jsonify({'summary': summary})
+
     except requests.exceptions.RequestException as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f"Erro ao acessar a URL: {e}"}), 500
+    except Exception as e:
+        # Captura outros erros, incluindo os da API do Gemini
+        print(f"Ocorreu um erro inesperado: {e}")
+        return jsonify({'error': f"Erro ao gerar o resumo: {e}"}), 500
 
 if __name__ == '__main__':
-    app.run(host='172.21.2.152', port=5555, debug=True) # 172.21.2.152 - IP da minha VM Ubuntu no WSL
+    app.run(host='0.0.0.0', port=5555, debug=True)

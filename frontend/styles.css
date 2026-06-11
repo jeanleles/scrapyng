@@ -1,4 +1,5 @@
 html {
+  scroll-behavior: smooth;
   /*  font-size: 62.5%; */
   --menta: hsl(176 73% 7.3%);
   --indigo: hsl(230 36.4% 12.9%);
@@ -255,4 +256,31 @@ section#scrapeSection {
   background-clip: text;
   text-fill-color: transparent;
   font-weight: bold;
+}
+
+#goToTopBtn {
+  display: none; /* Oculto por padrão */
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: #00df89;
+  color: #161b22;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; /* Deixa o botão circular */
+  padding: 0; /* Garante que não haja preenchimento interno */
+  font-size: 24px;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+#goToTopBtn:hover {
+  background-color: #04794c;
+  transform: translateY(-3px); /* Efeito de "levantar" ao passar o mouse */
 }

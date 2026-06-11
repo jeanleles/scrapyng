@@ -1,4 +1,5 @@
 # Scrapyng
+
 #### by @jeanleles
 
 #### Uma aplicação para fazer o scrap de páginas web, pegando os seus títulos (h1 e h2) e parágrafos (p). Caso você deseje ler os textos de uma página, mas não está sendo possível devido a algum modal, popup ou tarja que esteja na frente do conteúdo da página, tipo exigência de login, aceite de termos e cookies ou assinatura, você pode utilizar esta aplicação para obter o conteúdo da página apenas colocando a sua URL. Também é possível gerar um resumo do texto que foi extraído da página usaundo a ApyHub.
@@ -19,11 +20,13 @@
 
 ```bash
 git clone https://github.com/jeanleles/scrapyng.git
-cd scrapyng 
+cd scrapyng
 ```
 
 ### 2. Configuração do Backend
+
 #### Instalar Dependências do Python
+
 ##### Acesse o diretório backend e instale as dependências necessárias:
 
 ```bash
@@ -32,7 +35,9 @@ pip install flask beautifulsoup4 requests
 ```
 
 ### 3. Configuração do Frontend
+
 #### Instalar o http-server
+
 ##### No diretório frontend, instale o http-server globalmente para servir os arquivos HTML, CSS e JavaScript:
 
 ```bash
@@ -40,39 +45,54 @@ npm install -g http-server
 ```
 
 ### 4. Manter a Aplicação Online com PM2
+
 #### Para manter a aplicação rodando continuamente, usaremos o PM2.
+
 #### Instalar o PM2
+
 ```bash
 npm install -g pm2
 ```
 
 #### Iniciar o Backend com PM2
+
 ##### Navegue até o diretório do backend e inicie o backend usando PM2:
+
 ```bash
 pm2 start start-backend.sh --name backendScrapyng
 ```
 
 #### Iniciar o Frontend com PM2
+
 ##### Navegue até o diretório do frontend e inicie o frontend usando PM2:
+
 ```bash
-pm2 start start-frontend.sh --name frontendServer
+pm2 start start-frontend.sh --name frontendScrapyng
 ```
 
 #### Verificar os Processos
+
 ##### Para listar os processos em execução com o PM2, utilize:
+
 ```bash
 pm2 list
 ```
 
 #### Verificar os Processos
+
 ##### Para listar os processos em execução com o PM2, utilize:
+
 ```bash
 pm2 save
 pm2 startup
 ```
 
 ### 5. Utilização da Aplicação
+
 #### 1. Acesse o frontend através do navegador usando o endereço fornecido pelo http-server, por exemplo, http://localhost:8080.
+
 #### 2. Insira a URL da página que deseja fazer o scraping no campo de entrada.
+
 #### 3. Clique no botão para obter os resultados.
+
 #### 4. O conteúdo da página (tags h1, h2, p, etc.) será exibido logo abaixo.

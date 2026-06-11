@@ -1,38 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-  <meta charset="UTF-8">
-  
-  <title>Scrapyng</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" type="image/x-icon" href="favicon.png">
-</head>
+    <title>Scrapyng</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/x-icon" href="favicon.png" />
+  </head>
 
-<body>
-  <div class="center-box">
-    <h1>Scra<span class="py-highlight">py</span>ng</h1>
-    <div class="url-box">
-      <input type="url" id="urlInput" placeholder="Insira a URL da página">
-      <button type="button" class="clear-btn" onclick="clearUrlInput()">&times;</button>
+  <body>
+    <div class="center-box">
+      <h1>Scra<span class="py-highlight">py</span>ng</h1>
+      <div class="url-box">
+        <input type="url" id="urlInput" placeholder="Insira a URL da página" />
+        <button type="button" class="clear-btn" onclick="clearUrlInput()">
+          &times;
+        </button>
+      </div>
+      <div class="button-group">
+        <button onclick="fetchScrapingResults()">Fazer Scraping</button>
+        <button onclick="fetchOnlySummary()">Resumo</button>
+      </div>
     </div>
-    <div class="button-group">
-      <button onclick="fetchScrapingResults()">Fazer Scraping</button>
-      <button onclick="fetchOnlySummary()">Resumo</button>
-    </div>
-  </div>
 
-  <div id="loadingSpinner" class="spinner" style="display: none;"></div>
-  <section id="scrapeSection" style="display: none;">
-    <div class="summary" id="summaryContainer"></div>
-    <hr class="section-separator" />
-    <div class="result" id="resultContent"></div>
-  </section>
-  <footer>
-    <p>by @jeanleles</p>
-  </footer>
+    <div id="loadingSpinner" class="spinner" style="display: none"></div>
+    <section id="scrapeSection" style="display: none">
+      <div class="summary" id="summaryContainer"></div>
+      <hr class="section-separator" />
+      <div class="result" id="resultContent"></div>
+    </section>
 
-  <script src="script.js"></script>
-</body>
+    <button onclick="goToTop()" id="goToTopBtn" title="Ir para o topo">
+      &#8679;
+    </button>
+    <footer>
+      <p>by @jeanleles</p>
+    </footer>
 
+    <script src="script.js"></script>
+  </body>
 </html>

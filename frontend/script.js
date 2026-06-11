@@ -12,7 +12,8 @@ async function fetchScrapingResults() {
 
   // Validação: se não houver URL, exibe erro unificado e retorna
   if (!url || url.trim() === '') {
-    summaryContainer.innerHTML = '<div><strong>Erro:</strong> Informe uma URL válida para realizar o scraping.</div>';
+    summaryContainer.innerHTML =
+      '<div><strong>Erro:</strong> Informe uma URL válida para realizar o scraping.</div>';
     scrapeSection.style.display = 'block';
     return;
   }
@@ -21,31 +22,33 @@ async function fetchScrapingResults() {
 
   try {
     // Chama o backend para obter o resumo
-    const summaryResponse = await fetch('http://172.21.2.152:5555/summarize', {
+    const summaryResponse = await fetch('http://localhost:5555/summarize', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }),
     });
     if (summaryResponse.ok) {
       const summaryData = await summaryResponse.json();
       if (summaryData.summary) {
         summaryContainer.innerHTML = `<div><strong>Resumo:</strong> ${summaryData.summary}</div>`;
       } else {
-        summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Não foi possível gerar um resumo.</div>';
+        summaryContainer.innerHTML =
+          '<div><strong>Resumo:</strong> Não foi possível gerar um resumo.</div>';
       }
     } else {
-      summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Erro ao gerar resumo.</div>';
+      summaryContainer.innerHTML =
+        '<div><strong>Resumo:</strong> Erro ao gerar resumo.</div>';
     }
 
     // Chama o backend para obter o scraping detalhado
-    const response = await fetch('http://172.21.2.152:5555/scrape', {
+    const response = await fetch('http://localhost:5555/scrape', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }),
     });
 
     if (!response.ok) {
@@ -62,19 +65,19 @@ async function fetchScrapingResults() {
     resultContainer.innerHTML = '';
 
     // Adicionar os textos de <h1>, <h2> e <p> ao HTML dinamicamente
-    data.h1.forEach(text => {
+    data.h1.forEach((text) => {
       const h1Element = document.createElement('h1');
       h1Element.textContent = text;
       resultContainer.appendChild(h1Element);
     });
 
-    data.h2.forEach(text => {
+    data.h2.forEach((text) => {
       const h2Element = document.createElement('h2');
       h2Element.textContent = text;
       resultContainer.appendChild(h2Element);
     });
 
-    data.p.forEach(text => {
+    data.p.forEach((text) => {
       const pElement = document.createElement('p');
       pElement.textContent = text;
       resultContainer.appendChild(pElement);
@@ -82,7 +85,6 @@ async function fetchScrapingResults() {
 
     spinner.style.display = 'none';
     scrapeSection.style.display = 'block';
-
   } catch (error) {
     summaryContainer.innerHTML = `<div><strong>Erro:</strong> ${error.message}</div>`;
     resultContainer.innerHTML = '';
@@ -104,7 +106,8 @@ async function fetchOnlySummary() {
 
   // Validação: se não houver URL, exibe erro unificado e retorna
   if (!url || url.trim() === '') {
-    summaryContainer.innerHTML = '<div><strong>Erro:</strong> Informe uma URL válida para gerar o resumo.</div>';
+    summaryContainer.innerHTML =
+      '<div><strong>Erro:</strong> Informe uma URL válida para gerar o resumo.</div>';
     scrapeSection.style.display = 'block';
     return;
   }
@@ -112,22 +115,24 @@ async function fetchOnlySummary() {
   spinner.style.display = 'flex';
 
   try {
-    const summaryResponse = await fetch('http://172.21.2.152:5555/summarize', {
+    const summaryResponse = await fetch('http://localhost:5555/summarize', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }),
     });
     if (summaryResponse.ok) {
       const summaryData = await summaryResponse.json();
       if (summaryData.summary) {
         summaryContainer.innerHTML = `<div><strong>Resumo:</strong> ${summaryData.summary}</div>`;
       } else {
-        summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Não foi possível gerar um resumo.</div>';
+        summaryContainer.innerHTML =
+          '<div><strong>Resumo:</strong> Não foi possível gerar um resumo.</div>';
       }
     } else {
-      summaryContainer.innerHTML = '<div><strong>Resumo:</strong> Erro ao gerar resumo.</div>';
+      summaryContainer.innerHTML =
+        '<div><strong>Resumo:</strong> Erro ao gerar resumo.</div>';
     }
     spinner.style.display = 'none';
     scrapeSection.style.display = 'block';
@@ -143,7 +148,7 @@ async function fetchOnlySummary() {
 const urlInput = document.getElementById('urlInput');
 const urlBox = document.querySelector('.url-box');
 if (urlInput && urlBox) {
-  urlInput.addEventListener('input', function() {
+  urlInput.addEventListener('input', function () {
     if (urlInput.value.trim() !== '') {
       urlBox.classList.add('has-text');
     } else {
@@ -161,7 +166,34 @@ function clearUrlInput() {
 }
 
 // Foco automático no input ao carregar a página
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', function () {
   const input = document.getElementById('urlInput');
   if (input) input.focus();
 });
+
+// Botão "Ir para o topo"
+const goToTopBtn = document.getElementById('goToTopBtn');
+
+// Quando o usuário rola a página, verifica se deve mostrar o botão
+window.onscroll = function () {
+  scrollFunction();
+};
+
+function scrollFunction() {
+  if (
+    document.body.scrollTop > 200 ||
+    document.documentElement.scrollTop > 200
+  ) {
+    goToTopBtn.style.display = 'flex';
+  } else {
+    goToTopBtn.style.display = 'none';
+  }
+}
+
+// Quando o usuário clica no botão, rola para o topo do documento
+function goToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth', // Adiciona uma animação de rolagem suave
+  });
+}
