@@ -10,9 +10,9 @@
 - **Flask**: Framework web para o backend em Python.
 - **Beautiful Soup**: Biblioteca Python para extração de dados de arquivos HTML e XML.
 - **Requests**: Biblioteca Python para fazer requisições HTTP.
-- **JavaScript**: Para o frontend, manipulando as requisições e exibindo os resultados.
-- **http-server**: Servidor simples para hospedar o frontend.
-- **PM2**: Gerenciador de processos para manter a aplicação online continuamente.
+- **Next.js 16**: Framework React utilizado no frontend com App Router.
+- **Tailwind CSS**: Sistema de estilos utilizado para construir a interface responsiva.
+- **Lucide React**: Biblioteca de ícones utilizada na interface.
 
 ## Instalação e Configuração
 
@@ -36,58 +36,31 @@ pip install flask beautifulsoup4 requests
 
 ### 3. Configuração do Frontend
 
-#### Instalar o http-server
-
-##### No diretório frontend, instale o http-server globalmente para servir os arquivos HTML, CSS e JavaScript:
+##### Acesse o diretório do frontend e instale as dependências do Next.js:
 
 ```bash
-npm install -g http-server
+cd frontend
+npm install
 ```
 
-### 4. Manter a Aplicação Online com PM2
-
-#### Para manter a aplicação rodando continuamente, usaremos o PM2.
-
-#### Instalar o PM2
+##### Para desenvolvimento, execute:
 
 ```bash
-npm install -g pm2
+npm run dev
 ```
 
-#### Iniciar o Backend com PM2
-
-##### Navegue até o diretório do backend e inicie o backend usando PM2:
+##### Para produção, gere o build e inicie o servidor:
 
 ```bash
-pm2 start start-backend.sh --name backendScrapyng
+npm run build
+npm run start
 ```
 
-#### Iniciar o Frontend com PM2
+O frontend estará disponível em `http://localhost:3000` no modo de desenvolvimento ou em `http://localhost:8080` usando o script `start-frontend.sh`. Configure `NEXT_PUBLIC_API_URL` em `frontend/.env.local` quando o backend não estiver em `http://localhost:5555`.
 
-##### Navegue até o diretório do frontend e inicie o frontend usando PM2:
+O frontend usa Next.js e não precisa mais de `http-server` ou PM2. Em um ambiente Docker, o Docker Compose será responsável pela execução e reinicialização dos serviços.
 
-```bash
-pm2 start start-frontend.sh --name frontendScrapyng
-```
-
-#### Verificar os Processos
-
-##### Para listar os processos em execução com o PM2, utilize:
-
-```bash
-pm2 list
-```
-
-#### Verificar os Processos
-
-##### Para listar os processos em execução com o PM2, utilize:
-
-```bash
-pm2 save
-pm2 startup
-```
-
-### 5. Utilização da Aplicação
+### 4. Utilização da Aplicação
 
 #### 1. Acesse o frontend através do navegador usando o endereço fornecido pelo http-server, por exemplo, http://localhost:8080.
 

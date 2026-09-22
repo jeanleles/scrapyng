@@ -1,3 +1,3 @@
 #!/bin/bash
-cd frontend
-http-server ./ -p 8080
+
+npm run start -- --hostname 0.0.0.0 --port 8080
