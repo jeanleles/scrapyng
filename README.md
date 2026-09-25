@@ -27,11 +27,28 @@ cd scrapyng
 
 #### Instalar Dependências do Python
 
-##### Acesse o diretório backend e instale as dependências necessárias:
+##### Acesse o diretório backend e instale todas as dependências necessárias:
 
 ```bash
 cd backend
-pip install flask beautifulsoup4 requests
+pip install -r requirements.txt
+```
+
+Copie `backend/.env.example` para `backend/.env` e preencha `GEMINI_API_KEY` quando quiser usar o resumo com IA.
+
+Para executar o backend localmente em modo de produção:
+
+```bash
+./start-backend.sh
+```
+
+O endpoint `GET /health` retorna `{"status":"ok"}` e pode ser usado por orquestradores para verificar a disponibilidade do serviço.
+
+Para construir e executar apenas o container do backend:
+
+```bash
+docker build -t scrapyng-backend ./backend
+docker run --rm -p 5555:5555 --env-file backend/.env scrapyng-backend
 ```
 
 ### 3. Configuração do Frontend
@@ -62,7 +79,7 @@ O frontend usa Next.js e não precisa mais de `http-server` ou PM2. Em um ambien
 
 ### 4. Utilização da Aplicação
 
-#### 1. Acesse o frontend através do navegador usando o endereço fornecido pelo http-server, por exemplo, http://localhost:8080.
+#### 1. Acesse o frontend através do navegador em `http://localhost:3000` no modo de desenvolvimento ou `http://localhost:8080` quando iniciado pelo script de produção.
 
 #### 2. Insira a URL da página que deseja fazer o scraping no campo de entrada.
 

@@ -10,7 +10,9 @@ import google.generativeai as genai
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Habilita CORS para todas as rotas
+CORS(app)
+
+REQUEST_TIMEOUT = float(os.getenv('SCRAPE_REQUEST_TIMEOUT', '20'))
 
 # Configura a API do Gemini
 try:
@@ -24,14 +26,14 @@ except Exception as e:
 
 @app.route('/scrape', methods=['POST'])
 def scrape_content():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     url = data.get('url')
     
     if not url:
         return jsonify({'error': 'URL é obrigatória'}), 400
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         body_content = soup.find('body')
@@ -79,14 +81,14 @@ def scrape_content():
 
 @app.route('/summarize', methods=['POST'])
 def summarize_content():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     url = data.get('url')
     if not url:
         return jsonify({'error': 'URL é obrigatória'}), 400
     
     try:
         # 1. Scraping do conteúdo da página
-        response = requests.get(url)
+        response = requests.get(url, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         body_content = soup.find('body')
@@ -133,5 +135,12 @@ def summarize_content():
         print(f"Ocorreu um erro inesperado: {e}")
         return jsonify({'error': f"Erro ao gerar o resumo: {e}"}), 500
 
+@app.get('/health')
+def health_check():
+    return jsonify({'status': 'ok'}), 200
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5555, debug=True)
+    port = int(os.getenv('PORT', '5555'))
+    debug = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug)
