@@ -11,6 +11,10 @@ RUN pip install --no-cache-dir --upgrade pip \
   && pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
+COPY safe_fetch.py .
+RUN useradd --create-home --uid 10001 app \
+  && chown -R app:app /app
+USER 10001:10001
 
 EXPOSE 5555
 

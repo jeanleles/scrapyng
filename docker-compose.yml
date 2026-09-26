@@ -8,10 +8,32 @@ services:
     environment:
       PORT: 5555
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
-      SCRAPE_REQUEST_TIMEOUT: ${SCRAPE_REQUEST_TIMEOUT:-20}
+      SCRAPE_CONNECT_TIMEOUT: ${SCRAPE_CONNECT_TIMEOUT:-5}
+      SCRAPE_READ_TIMEOUT: ${SCRAPE_READ_TIMEOUT:-15}
+      SCRAPE_RATE_LIMIT: ${SCRAPE_RATE_LIMIT:-10 per minute}
+      SUMMARIZE_RATE_LIMIT: ${SUMMARIZE_RATE_LIMIT:-3 per minute}
+      RATELIMIT_STORAGE_URI: ${RATELIMIT_STORAGE_URI:-redis://redis:6379/0}
+      TRUST_PROXY_HEADERS: "true"
       FLASK_DEBUG: ${FLASK_DEBUG:-false}
+    depends_on:
+      redis:
+        condition: service_healthy
     expose:
       - "5555"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 100
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
     healthcheck:
       test:
         - CMD
@@ -38,10 +60,46 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 100
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /data
+      - /tmp
+    mem_limit: 96m
+    cpus: 0.25
+    pids_limit: 50
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
     restart: unless-stopped

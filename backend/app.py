@@ -1,18 +1,41 @@
 from flask import Flask, request, jsonify
-import requests
 from bs4 import BeautifulSoup
-from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+from werkzeug.middleware.proxy_fix import ProxyFix
+from safe_fetch import SafeFetchError, fetch_html
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
+if os.getenv("TRUST_PROXY_HEADERS", "false").lower() == "true":
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri=os.getenv("RATELIMIT_STORAGE_URI", "memory://"),
+    default_limits=[],
+)
+MAX_GEMINI_CHARS = 100_000
 
-REQUEST_TIMEOUT = float(os.getenv('SCRAPE_REQUEST_TIMEOUT', '20'))
+
+def extract_summary_text(body_content):
+    texts = []
+    remaining_chars = MAX_GEMINI_CHARS
+    for text in body_content.stripped_strings:
+        if text.lower() == 'publicidade':
+            continue
+        if remaining_chars <= 0:
+            break
+        text = text[:remaining_chars]
+        texts.append(text)
+        remaining_chars -= len(text) + 1
+    return '\n'.join(texts)
 
 # Configura a API do Gemini
 try:
@@ -25,17 +48,20 @@ except Exception as e:
 
 
 @app.route('/scrape', methods=['POST'])
+@limiter.limit(os.getenv("SCRAPE_RATE_LIMIT", "10 per minute"))
 def scrape_content():
-    data = request.get_json(silent=True) or {}
+    if not request.is_json:
+        return jsonify({'error': 'O conteúdo deve ser enviado como JSON.'}), 415
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Corpo JSON inválido.'}), 400
     url = data.get('url')
-    
-    if not url:
+    if not isinstance(url, str) or not url:
         return jsonify({'error': 'URL é obrigatória'}), 400
 
     try:
-        response = requests.get(url, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
+        html = fetch_html(url)
+        soup = BeautifulSoup(html, 'html.parser')
         body_content = soup.find('body')
 
         if not body_content:
@@ -76,21 +102,25 @@ def scrape_content():
 
         return jsonify(result)
 
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': str(e)}), 500
+    except SafeFetchError as error:
+        return jsonify({'error': str(error)}), error.status_code
 
 @app.route('/summarize', methods=['POST'])
+@limiter.limit(os.getenv("SUMMARIZE_RATE_LIMIT", "3 per minute"))
 def summarize_content():
-    data = request.get_json(silent=True) or {}
+    if not request.is_json:
+        return jsonify({'error': 'O conteúdo deve ser enviado como JSON.'}), 415
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Corpo JSON inválido.'}), 400
     url = data.get('url')
-    if not url:
+    if not isinstance(url, str) or not url:
         return jsonify({'error': 'URL é obrigatória'}), 400
     
     try:
         # 1. Scraping do conteúdo da página
-        response = requests.get(url, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
+        html = fetch_html(url)
+        soup = BeautifulSoup(html, 'html.parser')
         body_content = soup.find('body')
 
         if not body_content:
@@ -99,16 +129,7 @@ def summarize_content():
         for tag in body_content.find_all(['header', 'aside', 'footer', 'nav', 'script', 'style']):
             tag.decompose()
 
-        texts = []
-        for tag_name in ['h1','h2','h3','h4','h5','h6','p','span','blockquote','div', 'li']:
-            elements = body_content.find_all(tag_name)
-            for el in elements:
-                text = el.get_text(strip=True)
-                # Adiciona apenas texto que não seja vazio e não seja 'publicidade'
-                if text and text.lower() != 'publicidade':
-                    texts.append(text)
-        
-        full_text = '\n'.join(texts)
+        full_text = extract_summary_text(body_content)
 
         if not full_text:
             return jsonify({'summary': 'Não foi possível extrair conteúdo textual da página para resumir.'})
@@ -128,8 +149,8 @@ def summarize_content():
         
         return jsonify({'summary': summary})
 
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': f"Erro ao acessar a URL: {e}"}), 500
+    except SafeFetchError as error:
+        return jsonify({'error': str(error)}), error.status_code
     except Exception as e:
         # Captura outros erros, incluindo os da API do Gemini
         print(f"Ocorreu um erro inesperado: {e}")
@@ -138,6 +159,16 @@ def summarize_content():
 @app.get('/health')
 def health_check():
     return jsonify({'status': 'ok'}), 200
+
+
+@app.errorhandler(413)
+def request_too_large(_error):
+    return jsonify({'error': 'O corpo da requisição excede o limite permitido.'}), 413
+
+
+@app.errorhandler(429)
+def rate_limit_exceeded(_error):
+    return jsonify({'error': 'Limite de requisições excedido. Tente novamente mais tarde.'}), 429
 
 
 if __name__ == '__main__':

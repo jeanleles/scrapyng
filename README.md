@@ -9,7 +9,7 @@
 - **Python**: Para o backend, usando Flask para criar a API que faz o scraping.
 - **Flask**: Framework web para o backend em Python.
 - **Beautiful Soup**: Biblioteca Python para extração de dados de arquivos HTML e XML.
-- **Requests**: Biblioteca Python para fazer requisições HTTP.
+- **HTTP client**: `http.client` com resolução DNS fixada para proteger o scraping contra SSRF.
 - **Next.js 16**: Framework React utilizado no frontend com App Router.
 - **Tailwind CSS**: Sistema de estilos utilizado para construir a interface responsiva.
 - **Lucide React**: Biblioteca de ícones utilizada na interface.
@@ -59,6 +59,10 @@ Para executar o backend localmente em modo de produção:
 ```
 
 O endpoint `GET /health` retorna `{"status":"ok"}` e pode ser usado por orquestradores para verificar a disponibilidade do serviço.
+
+As rotas de scraping aceitam somente URLs HTTP/HTTPS com destinos IP públicos. DNS é resolvido e fixado no IP validado; redirects são limitados e validados novamente. Respostas ficam limitadas a 3 MiB de HTML, o corpo JSON a 16 KiB, a URL a 2 KiB e o texto enviado ao Gemini a 100 mil caracteres. Timeouts de conexão/leitura são configuráveis por `SCRAPE_CONNECT_TIMEOUT` e `SCRAPE_READ_TIMEOUT`, com máximos de 10 e 30 segundos.
+
+`/scrape` permite 10 requisições por minuto por IP e `/summarize` permite 3. O desenvolvimento local usa armazenamento em memória; o Compose fornece Redis interno para compartilhar esses limites entre workers. Em produção, mantenha `RATELIMIT_STORAGE_URI` apontando para um armazenamento compartilhado. CORS não é habilitado: o navegador usa o mesmo domínio do Next.js. Só o Compose ativa a confiança em um proxy para obter o IP do cliente (`TRUST_PROXY_HEADERS`); não publique a porta do backend diretamente.
 
 Para construir e executar apenas o container do backend:
 
