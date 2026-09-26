@@ -1,0 +1,47 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      PORT: 5555
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+      SCRAPE_REQUEST_TIMEOUT: ${SCRAPE_REQUEST_TIMEOUT:-20}
+      FLASK_DEBUG: ${FLASK_DEBUG:-false}
+    expose:
+      - "5555"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:5555/health')
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BACKEND_INTERNAL_URL: http://backend:5555
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
