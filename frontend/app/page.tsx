@@ -26,7 +26,7 @@ type ScrapeResult = Record<string, string[]>;
 type ResultMode = 'scrape' | 'summary';
 type ApiState = 'idle' | 'loading' | 'success' | 'error';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5555';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 const sections = [
   ['h1', 'Títulos principais'],
   ['h2', 'Subtítulos'],
